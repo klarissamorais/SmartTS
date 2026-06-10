@@ -181,6 +181,7 @@ typeOfLValue (LField root fld) = do
 inferExpr :: Expr -> TcM Type
 inferExpr (CInt _) = return TInt
 inferExpr (CBool _) = return TBool
+inferExpr (CString _) = return TString
 inferExpr Unit = return TUnit
 inferExpr StorageExpr = gets envStorageType
 inferExpr (Var n) = do
@@ -283,6 +284,7 @@ typesEqual :: Type -> Type -> Bool
 typesEqual TInt TInt = True
 typesEqual TBool TBool = True
 typesEqual TUnit TUnit = True
+typesEqual TString TString = True
 typesEqual (TRecord as) (TRecord bs) = length as == length bs && and (zipWith fieldEq as bs)
   where
     fieldEq (n1, t1) (n2, t2) = n1 == n2 && typesEqual t1 t2
