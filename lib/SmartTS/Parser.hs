@@ -38,6 +38,7 @@ reservedWords =
   , "val"
   , "true"
   , "false"
+  , "string"
   ]
 
 identifier :: Parser String
@@ -61,6 +62,7 @@ parseType = parseRecordType <|> parsePrimitiveType
       (reserved "int" >> return TInt)
         <|> (reserved "bool" >> return TBool)
         <|> (reserved "unit" >> return TUnit)
+        <|> (reserved "string" >> return TString)
 
     parseRecordType :: Parser Type
     parseRecordType = do
