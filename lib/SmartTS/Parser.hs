@@ -120,6 +120,7 @@ parseAtom :: Parser Expr
 parseAtom =
   parseUnit
     <|> parseRecordExpr
+    <|> parseString
     <|> parseBool
     <|> parseInt
     <|> parseVarOrCall
@@ -145,6 +146,13 @@ parseBool :: Parser Expr
 parseBool =
   (reserved "true" >> return (CBool True))
     <|> (reserved "false" >> return (CBool False))
+
+parseString :: Parser Expr
+parseString = do
+  _ <- char '"'
+  content <- manyTill L.charLiteral (char '"')
+  spaceConsumer
+  return (CString content)
 
 parseRecordExpr :: Parser Expr
 parseRecordExpr = do
