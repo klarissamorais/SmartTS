@@ -95,6 +95,17 @@ storageTests = testGroup "Storage Parsing"
         case contract of
           Contract _ storage _ ->
             assertEqual "Should have 3 storage fields" 3 (length storage)
+
+  , testCase "String literal" $
+    parseSuccess
+      "contract Test { storage: { x: int }; @entrypoint get(): string { return \"hello\"; } }"
+      $ \contract ->
+        case contract of
+          Contract _ _
+            [MethodDecl _ "get" [] TString
+              (SequenceStmt [ReturnStmt (CString "hello")])]
+              -> return ()
+          _ -> assertFailure $ "Expected string literal, got: " ++ show contract
   
   , testCase "Storage with single field (no comma)" $
       parseSuccess "contract Test { storage: { x: int }; @originate init(): int { return 0; } }" $ \contract ->
@@ -449,6 +460,9 @@ typeCheckTests =
     , testCase "Arithmetic requires int" $
         typeCheckFailure
           "contract C { storage: { x: int }; @originate init(): int { return 1 + true; } }"
+    , testCase "String variable declaration" $
+      typeCheckSuccess
+        "contract C { storage: { name: string }; @originate init(): unit { var s: string = \"hello\"; return (); } }"
     , testCase "Cannot assign to val" $
         typeCheckFailure
           "contract C { storage: { x: int }; @originate init(): int { val v: int = 1; v = 2; return 0; } }"
