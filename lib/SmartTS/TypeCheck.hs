@@ -5,6 +5,7 @@ module SmartTS.TypeCheck
   ) where
 
 import Control.Monad.State
+import Control.Monad (when, zipWithM_)
 import Data.List (nub)
 import qualified Data.Map.Strict as M
 import SmartTS.AST
@@ -294,6 +295,7 @@ prettyType :: Type -> String
 prettyType TInt = "int"
 prettyType TBool = "bool"
 prettyType TUnit = "unit"
+prettyType TString = "string"
 prettyType (TRecord fs) =
   "{"
     ++ concat
