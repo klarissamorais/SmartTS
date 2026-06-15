@@ -9,6 +9,7 @@ import SmartTS.Parser
 import Data.Aeson (object, (.=))
 import SmartTS.Interpreter (ContractInstance (..), contractInstanceFromStorageValue)
 import SmartTS.TypeCheck (typeCheckContract)
+import Data.Aeson (Value(..), object, (.=))
 
 main :: IO ()
 main = defaultMain tests
@@ -463,6 +464,15 @@ typeCheckTests =
     , testCase "String variable declaration" $
       typeCheckSuccess
         "contract C { storage: { name: string }; @originate init(): unit { var s: string = \"hello\"; return (); } }"
+        
+    , testCase "String return type" $
+        typeCheckSuccess
+          "contract C { storage: { name: string }; @originate init(): string { return \"hello\"; } }"
+
+    , testCase "String type mismatch" $
+        typeCheckFailure
+          "contract C { storage: { name: string }; @originate init(): string { return 42; } }"
+          
     , testCase "Cannot assign to val" $
         typeCheckFailure
           "contract C { storage: { x: int }; @originate init(): int { val v: int = 1; v = 2; return 0; } }"
