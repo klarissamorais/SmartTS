@@ -104,7 +104,7 @@ storageTests = testGroup "Storage Parsing"
         case contract of
           Contract _ _
             [MethodDecl _ "get" [] TString
-              (SequenceStmt [ReturnStmt (CString "hello")])]
+              (SequenceStmt [ReturnStmt (CString () "hello")])]
               -> return ()
           _ -> assertFailure $ "Expected string literal, got: " ++ show contract
   
