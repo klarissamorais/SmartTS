@@ -15,6 +15,7 @@ import SmartTS.Interpreter.Runtime
 evalExpr :: Expr -> EvalM Expr
 evalExpr (CInt n) = return (CInt n)
 evalExpr (CBool b) = return (CBool b)
+evalExpr (CString s) = return (CString s)
 evalExpr Unit = return Unit
 evalExpr StorageExpr = do
   rt <- get
