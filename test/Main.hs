@@ -499,12 +499,19 @@ typeCheckTests =
                 _ -> assertFailure $ "unexpected storage expr: " ++ show st
     , testCase "String concatenation" $
         typeCheckSuccess
-          "contract C {
-            storage: { x: string };
-            @originate init(): string {
-              return \"Hello \" + \"World\";
-            }
-          }"
+          "contract C { storage: {}; @originate init(): int { return length(\"hello\"); } }"
+
+    , testCase "Length accepts string" $
+        typeCheckSuccess
+          "contract C { storage: { s: string }; @originate init(): int { return length(\"hello\"); } }"
+
+    , testCase "Length rejects int" $
+        typeCheckFailure
+          "contract C { storage: { s: string }; @originate init(): int { return length(123); } }"
+
+    , testCase "Length requires one argument" $
+        typeCheckFailure
+          "contract C { storage: { s: string }; @originate init(): int { return length(\"a\", \"b\"); } }"
     ]
 
 errorTests :: TestTree

@@ -246,22 +246,40 @@ inferExpr (Record () pairs) = do
   tpairs <- mapM (\(k, e) -> (,) k <$> inferExpr e) pairs
   let fields = [(k, exprAnn te) | (k, te) <- tpairs]
   return (Record (TRecord fields) tpairs)
-inferExpr (Call () name args) = do
-  env <- get
-  case M.lookup name (envFunctionSignatures env) of
-    Nothing -> tcError $ "Unknown function `" ++ name ++ "`."
-    Just sig -> do
-      let expected = formalArgs sig
-      when (length args /= length expected) $
-        tcError $
-          "Function `" ++ name ++ "` expects " ++ show (length expected)
-            ++ " argument(s) but got " ++ show (length args) ++ "."
-      targs <- mapM inferExpr args
-      zipWithM_
-        (\ta ex -> lift $ expectType ("argument to `" ++ name ++ "`") (exprAnn ta) ex)
-        targs
-        expected
-      return (Call (returnType sig) name targs)
+inferExpr (Call () name args)
+  | name == "length" =
+      case args of
+        [e] -> do
+          te <- inferExpr e
+          lift $ expectType "argument to `length`" (exprAnn te) TString
+          return (Call TInt name [te])
+
+        _ ->
+          tcError "Function `length` expects exactly one argument."
+
+  | otherwise = do
+      env <- get
+      case M.lookup name (envFunctionSignatures env) of
+        Nothing -> tcError $ "Unknown function `" ++ name ++ "`."
+        Just sig -> do
+          let expected = formalArgs sig
+          when (length args /= length expected) $
+            tcError $
+              "Function `" ++ name ++ "` expects "
+                ++ show (length expected)
+                ++ " argument(s) but got "
+                ++ show (length args)
+                ++ "."
+          targs <- mapM inferExpr args
+          zipWithM_
+            (\ta ex ->
+                lift $ expectType
+                  ("argument to `" ++ name ++ "`")
+                  (exprAnn ta)
+                  ex)
+            targs
+            expected
+          return (Call (returnType sig) name targs)
 
 inferBoolBin :: (Expr Type -> Expr Type -> Expr Type) -> Expr () -> Expr () -> TcM (Expr Type)
 inferBoolBin con a b = do
