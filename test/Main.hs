@@ -497,6 +497,14 @@ typeCheckTests =
               Right (ContractInstance _ st) -> case st of
                 Record _ [("n", CInt _ 1), ("b", CBool _ True)] -> return ()
                 _ -> assertFailure $ "unexpected storage expr: " ++ show st
+    , testCase "String concatenation" $
+        typeCheckSuccess
+          "contract C {
+            storage: { x: string };
+            @originate init(): string {
+              return \"Hello \" + \"World\";
+            }
+          }"
     ]
 
 errorTests :: TestTree

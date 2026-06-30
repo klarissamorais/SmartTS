@@ -48,7 +48,10 @@ evalExpr (Not _ e) = do
     _         -> interpretBug "operand of ! was not bool after type check"
 evalExpr (And _ a b) = boolBin a b (&&)
 evalExpr (Or  _ a b) = boolBin a b (||)
-evalExpr (Add _ a b) = intBin a b (+)
+evalExpr (Add ty a b) = case ty of
+  TInt -> intBin a b (+)
+  TString -> stringBin a b (++)
+  _ -> interpretBug "Add should only have int or string type"
 evalExpr (Sub _ a b) = intBin a b (-)
 evalExpr (Mul _ a b) = intBin a b (*)
 evalExpr (Div _ a b) = do
@@ -215,6 +218,16 @@ evalInt e = do
 
 intBin :: TypedExpr -> TypedExpr -> (Int -> Int -> Int) -> EvalM TypedExpr
 intBin a b op = CInt TInt <$> (op <$> evalInt a <*> evalInt b)
+
+evalString :: TypedExpr -> EvalM String
+evalString e = do
+  v <- evalExpr e
+  case v of
+    CString _ s -> return s
+    _           -> interpretBug "expected string subexpression after type check"
+
+stringBin :: TypedExpr -> TypedExpr -> (String -> String -> String) -> EvalM TypedExpr
+stringBin a b op = CString TString <$> (op <$> evalString a <*> evalString b)
 
 boolBin :: TypedExpr -> TypedExpr -> (Bool -> Bool -> Bool) -> EvalM TypedExpr
 boolBin a b op = do

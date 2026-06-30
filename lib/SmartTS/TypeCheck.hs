@@ -225,7 +225,13 @@ inferExpr (Not () e) = do
   return (Not TBool te)
 inferExpr (And () a b)  = inferBoolBin (And TBool) a b
 inferExpr (Or () a b)   = inferBoolBin (Or TBool) a b
-inferExpr (Add () a b)  = inferIntBin  (Add TInt) a b
+inferExpr (Add () a b) = do
+  ta <- inferExpr a
+  tb <- inferExpr b
+  case (exprAnn ta, exprAnn tb) of
+    (TString, TString) -> return (Add TString ta tb)
+    (TInt, TInt) -> return (Add TInt ta tb)
+    _ -> tcError "Both operands of + must have the same type (int or string)"
 inferExpr (Sub () a b)  = inferIntBin  (Sub TInt) a b
 inferExpr (Mul () a b)  = inferIntBin  (Mul TInt) a b
 inferExpr (Div () a b)  = inferIntBin  (Div TInt) a b
