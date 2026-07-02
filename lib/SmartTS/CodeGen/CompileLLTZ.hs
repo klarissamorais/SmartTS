@@ -6,6 +6,7 @@ import qualified SmartTS.IR.LLTZ as L
 translateType :: A.Type -> L.Type
 translateType A.TInt             = L.TInt
 translateType A.TBool            = L.TBool
+translateType A.TString          = L.TString
 translateType A.TUnit            = L.TUnit
 translateType (A.TRecord fields) = L.TTuple (L.RowNode (map toLeaf fields))
   where
