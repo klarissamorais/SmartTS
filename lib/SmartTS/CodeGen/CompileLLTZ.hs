@@ -15,11 +15,16 @@ translateType (A.TRecord fields) = L.TTuple (L.RowNode (map toLeaf fields))
 translateExpression :: A.TypedExpr -> L.Expr
 translateExpression (A.CInt  ty value) = mkExpr (L.Const (L.CInt value)) ty
 translateExpression (A.CBool ty value) = mkExpr (L.Const (L.CBool value)) ty
+translateExpression (A.CString ty value) = mkExpr (L.Const (L.CString value)) ty
 translateExpression (A.Var   ty name)  = mkExpr (L.Variable (L.Var name)) ty
 -- Boolean Expressions
 translateExpression (A.And ty e1 e2) = translateBinaryExpression e1 e2 ty L.PrimAnd
 translateExpression (A.Or  ty e1 e2) = translateBinaryExpression e1 e2 ty L.PrimOr
 translateExpression (A.Not ty e)     = translateUnaryExpression e ty L.PrimNot
+-- String Expressions
+translateExpression (A.Add ty e1 e2)
+  | ty == A.TString = translateBinaryExpression e1 e2 ty L.PrimConcat2
+translateExpression (A.Call ty "length" [e]) = translateUnaryExpression e ty L.PrimSize
 -- TODO: Write here the translation of the remaining expressions.
 
 -- | Translate a SmartTS block (a list of statements) into a nested LLTZ let-expression.
